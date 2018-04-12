@@ -1,0 +1,24 @@
+package com.nuclaer.net;
+
+import java.util.Arrays;
+
+public class RoutingTable {
+	public static final byte[] ROUTE_PUBLIC_DATABASE={0x7F,0x00,0x00,0x00,0x00,0x00,0x00,0x3E};
+	public static final byte ROUTE_IPV4=0x4E;
+	public String next(byte[] endpoint) {
+		if(Arrays.equals(endpoint, ROUTE_PUBLIC_DATABASE)){
+			return "localhost:1152";
+		}else if(endpoint[0]==0x7F&&endpoint[1]==ROUTE_IPV4){
+			String result="";
+			for(int i=4;i<7;i++){
+				int q=endpoint[i];
+				if(q<0)
+					q+=256;
+				result+=q+".";
+			}
+			return result+endpoint[7];
+		}
+		return null;
+	}
+
+}
