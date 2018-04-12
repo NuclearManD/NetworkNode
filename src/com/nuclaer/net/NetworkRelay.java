@@ -27,7 +27,12 @@ public class NetworkRelay extends Server implements Runnable {
 		}
 		Client client;
 		try {
-			client = new Client(port,target);
+			if(!target.contains(":"))
+				client = new Client(port,target);
+			else{
+				int i=target.indexOf(":");
+				client = new Client(Integer.parseInt(target.substring(0, i)),target.substring(i+1));
+			}
 			return client.poll(in);
 		} catch (IOException e) {
 			return ERROR_IN_TX;

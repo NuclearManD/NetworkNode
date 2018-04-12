@@ -44,6 +44,24 @@ public class NodeServer extends Server {
 			io.println("Could not bind port");
 		}
 	}
+	public NodeServer(int bt, byte[] Key) {
+		super(1152);
+		io.println("Starting...");
+		io.println("Loading blockchain...");
+		blockchain=new SavedChain(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/blockchain");
+		io.println("Loaded; blockchain contains "+blockchain.length()+" normal blocks.");
+		io.println("Node public key: "+Base64.getEncoder().encodeToString(Key));
+		io.println("Node balance: "+blockchain.getCoinBalance(Key)+" KiB ");
+		pubkey=Key;
+		minerObject=new NodeMiner(blockchain,new CLILogger(),true,pubkey, bt);
+		minerThread=new Thread(minerObject);
+		try {
+			minerThread.start();
+			start();
+		} catch (IOException e) {
+			io.println("Could not bind port");
+		}
+	}
 	public byte[] easyServe(byte[] in) {
 		byte cmd=in[0];
 		byte[] response="OK".getBytes(StandardCharsets.UTF_8);

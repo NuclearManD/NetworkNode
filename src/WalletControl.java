@@ -23,6 +23,7 @@ public class WalletControl extends WalletGUI {
 	public WalletControl(BlockchainBase man1, ECDSAKey key1, ClientIface iface1) {
 		super(man1, key1, iface1);
 		btnSend.setEnabled(false);
+		btnReconnect.setText("Change Node");
 		remove(tmp);
 	}
 
@@ -83,6 +84,8 @@ public class WalletControl extends WalletGUI {
 					}
 			    }
 			}).start();
+		}else if(e.getActionCommand()=="RECONNECT"){
+			selReconnect=true;
 		}
 	}
 

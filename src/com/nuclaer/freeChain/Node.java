@@ -22,11 +22,22 @@ public class Node implements Runnable {
 			key=new ECDSAKey();
 			key.save(keypath);
 		}
-		server=new NodeServer(key.getPublicKey());
-		new Thread(new NetworkRelay(1153));
+		server=new NodeServer(30000, key.getPublicKey());
+		new Thread(new NetworkRelay(1153)).start();
+	}
+	public Node(int bt) {
+		if(new File(keypath).exists())
+			key=new ECDSAKey(keypath);
+		else{
+			new File(keypath).getParentFile().mkdirs();
+			key=new ECDSAKey();
+			key.save(keypath);
+		}
+		server=new NodeServer(bt, key.getPublicKey());
+		new Thread(new NetworkRelay(1153)).start();
 	}
 	public void run() {
-		
+		new Node();
 	}
 
 	public static void main(String[] args) {

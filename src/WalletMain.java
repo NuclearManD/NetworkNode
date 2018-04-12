@@ -24,7 +24,7 @@ public class WalletMain implements Runnable {
 	SavedChainMod chain;
 	WalletControl gui;
 	public WalletMain() {
-		nodeAdr=JOptionPane.showInputDialog(null, "What IP is the node at?");
+		nodeAdr=nuclear.blocks.wallet.Main.nodeAdr;//JOptionPane.showInputDialog(null, "What IP is the node at?");
 		if(new File(keypath).exists())
 			key=new ECDSAKey(keypath);
 		else{
@@ -62,12 +62,28 @@ public class WalletMain implements Runnable {
 
 	public void run() {
 		while(true) {
-			int num=iface.downloadBlockchain(chain);
 			io.println("Downloading blocks...");
-			io.println("Downloaded "+num+" new blocks.");
-			gui.coinCountLabel.setText("Welcome to the database.  "+chain.length()+" main blocks loaded.");
+			int q;
+			q=iface.downloadBlockchain(chain);
+			if(q!=-1){
+				io.println("Downloaded "+q+" new blocks.");
+				gui.coinCountLabel.setText("Welcome to the database.  "+chain.length()+" main blocks loaded.");
+			}else
+				gui.coinCountLabel.setText("Error connecting to network.  "+chain.length()+" main blocks loaded.");
 			try {
-				Thread.sleep(1000*60*15);
+				for(int i=0;i<1000*60;i++){
+					Thread.sleep(15);
+					if(gui.selReconnect){
+						nodeAdr=JOptionPane.showInputDialog(null, "What IP is the node at?");
+						try {
+							iface=new ClientIface(nodeAdr);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						gui.selReconnect=false;
+						break;
+					}
+				}
 			} catch (InterruptedException e) {
 				break;
 			}
