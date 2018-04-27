@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import nuclear.blocks.client.ClientIface;
@@ -24,6 +25,7 @@ public class WalletControl extends WalletGUI {
 		super(man1, key1, iface1);
 		btnSend.setEnabled(false);
 		btnReconnect.setText("Change Node");
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		remove(tmp);
 	}
 
