@@ -37,12 +37,7 @@ public class NodeServer extends Server {
 		pubkey=Key;
 		minerObject=new NodeMiner(blockchain,new CLILogger(),true,pubkey);
 		minerThread=new Thread(minerObject);
-		try {
-			minerThread.start();
-			start();
-		} catch (IOException e) {
-			io.println("Could not bind port");
-		}
+		minerThread.start();
 	}
 	public NodeServer(int bt, byte[] Key) {
 		super(1152);
@@ -55,12 +50,7 @@ public class NodeServer extends Server {
 		pubkey=Key;
 		minerObject=new NodeMiner(blockchain,new CLILogger(),true,pubkey, bt);
 		minerThread=new Thread(minerObject);
-		try {
-			minerThread.start();
-			start();
-		} catch (IOException e) {
-			io.println("Could not bind port");
-		}
+		minerThread.start();
 	}
 	public byte[] easyServe(byte[] in) {
 		byte cmd=in[0];

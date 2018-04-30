@@ -1,6 +1,7 @@
 package com.nuclaer.freeChain;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import com.nuclaer.net.NetworkRelay;
@@ -24,9 +25,30 @@ public class Node implements Runnable {
 			key=new ECDSAKey();
 			key.save(keypath);
 		}
+		new Thread(new Runnable() {
+			public void run() {
+				try {
+					new NetworkRelay(1153).start();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 		server=new NodeServer(30000, key.getPublicKey());
-		new Thread(new NetworkRelay(1153)).start();
-		new Thread(new PrivateDatabaseHandler(6609, key, server.blockchain, auth)).start();
+		new Thread(new Runnable() {
+			public void run() {
+				try {
+					new PrivateDatabaseHandler(6609, key, server.blockchain, auth).start();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+		try{
+			server.start();
+		} catch (IOException e) {
+			io.println("Could not bind port");
+		}
 	}
 	public Node(int bt) {
 		if(new File(keypath).exists())
