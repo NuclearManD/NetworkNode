@@ -51,4 +51,8 @@ public class Bridge implements HttpHandler{
 		os.write(response);
 		os.close();
 	}
+
+	protected void onError(Exception e) {
+		log.println("ERROR: "+e.getMessage());
+	}
 }

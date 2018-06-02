@@ -25,7 +25,6 @@ public class NodeServer extends Server {
 	public static final byte CMD_GET_DAUGHTER = 3;
 	public BlockchainBase blockchain;
 	byte[] pubkey;
-	protected Thread minerThread;
 	protected NodeMiner minerObject;
 
 	Logger log=new Logger("Public Node");
@@ -37,11 +36,10 @@ public class NodeServer extends Server {
 		log.println("Node public key: "+Base64.getEncoder().encodeToString(Key));
 		log.println("Node balance: "+blockchain.getCoinBalance(Key)+" KiB ");
 		pubkey=Key;
-		minerObject=new NodeMiner(blockchain,new Logger("Miner"),true,pubkey);
-		minerThread=new Thread(minerObject);
 		try {
-			minerThread.start();
 			start();
+			minerObject=new NodeMiner(blockchain,new Logger("Miner"),true,pubkey);
+			minerObject.start(8);
 		} catch (IOException e) {
 			log.println("Could not bind port");
 		}
@@ -55,11 +53,10 @@ public class NodeServer extends Server {
 		log.println("Node public key: "+Base64.getEncoder().encodeToString(Key));
 		log.println("Node balance: "+blockchain.getCoinBalance(Key)+" KiB ");
 		pubkey=Key;
-		minerObject=new NodeMiner(blockchain,new Logger("Miner"),true,pubkey, bt);
-		minerThread=new Thread(minerObject);
 		try {
-			minerThread.start();
 			start();
+			minerObject=new NodeMiner(blockchain,new Logger("Miner"),true,pubkey, bt);
+			minerObject.start(8);
 		} catch (IOException e) {
 			log.println("Could not bind port");
 		}
@@ -132,5 +129,9 @@ public class NodeServer extends Server {
 				}
 			}
 		}).start();
+	}
+	
+	protected void onError(Exception e) {
+		log.println("ERROR: "+e.getMessage());
 	}
 }

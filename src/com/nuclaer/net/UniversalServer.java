@@ -138,4 +138,8 @@ public class UniversalServer extends Server {
 			}
 		}).start();
 	}
+
+	protected void onError(Exception e) {
+		log.println("ERROR: "+e.getMessage());
+	}
 }
