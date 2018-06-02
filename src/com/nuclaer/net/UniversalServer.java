@@ -81,11 +81,13 @@ public class UniversalServer extends Server {
 			if(address==null)
 				result=ERR_MSG_BC_DNF.getBytes();
 			else{
+				path=path.replaceFirst("/", "");
 				result=man.readFile(path, address);
 				if(result==null){
 					result=man.readFile("404.html", address);
 					if(result==null)
 						result=ERR_MSG_BC_404.getBytes();
+					log.println("File "+path+" was not found.");
 				}
 				
 			}

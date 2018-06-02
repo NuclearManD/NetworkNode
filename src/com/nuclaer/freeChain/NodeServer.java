@@ -32,7 +32,7 @@ public class NodeServer extends Server {
 	public NodeServer(byte[] Key) {
 		super(1152);
 		log.println("Loading blockchain...");
-		blockchain=new SavedChain(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/blockchain");
+		blockchain=new SavedChainMod(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/blockchain");
 		log.println("Loaded; blockchain contains "+blockchain.length()+" normal blocks.");
 		log.println("Node public key: "+Base64.getEncoder().encodeToString(Key));
 		log.println("Node balance: "+blockchain.getCoinBalance(Key)+" KiB ");
@@ -50,7 +50,7 @@ public class NodeServer extends Server {
 		super(1152);
 		log.println("Starting...");
 		log.println("Loading blockchain...");
-		blockchain=new SavedChain(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/blockchain");
+		blockchain=new SavedChainMod(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/blockchain");
 		log.println("Loaded; blockchain contains "+blockchain.length()+" normal blocks.");
 		log.println("Node public key: "+Base64.getEncoder().encodeToString(Key));
 		log.println("Node balance: "+blockchain.getCoinBalance(Key)+" KiB ");

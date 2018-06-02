@@ -28,7 +28,7 @@ public class SavedChainMod extends BlockchainBase{
 		daughters.addBlock(pair.block);
 	}
 	synchronized public byte[] readFile(String meta,byte[] pubAdr) {
-		for(int j=chain.length();j>=0;j--) {
+		for(int j=chain.length()-1;j>=0;j--) {
 			Block b=chain.get(j);
 			BlockMod block=(BlockMod)b;
 			for(int i=block.numTransactions()-1;i>=0;i--) {

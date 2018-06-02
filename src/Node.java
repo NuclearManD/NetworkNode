@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.nuclaer.freeChain.NodeServer;
+import com.nuclaer.net.Bridge;
 import com.nuclaer.net.NetworkRelay;
 import com.nuclaer.net.UniversalServer;
 
@@ -38,6 +39,7 @@ public class Node{
 		}catch(IOException e){
 			io.println("Unable to start Universal Server.");
 		}
+		new Bridge().start(8080);
 	}
 	public static void main(String[] args) {
 		io.println("Node preinit...");

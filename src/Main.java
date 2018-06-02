@@ -17,7 +17,7 @@ public class Main {
 		if(startNode){
 			new Thread(new Runnable() {
 				public void run() {
-					new Node(blocktime);
+					new Node(blocktime*1000);
 				}
 			}).start();
 		}
