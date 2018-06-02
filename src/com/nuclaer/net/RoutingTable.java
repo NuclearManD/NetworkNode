@@ -20,5 +20,12 @@ public class RoutingTable {
 		}
 		return null;
 	}
-
+	public boolean convert(byte[] endpoint){
+		if(Arrays.equals(endpoint, ROUTE_PUBLIC_DATABASE)){
+			return true;
+		}else if(endpoint[0]==0x7F&&endpoint[1]==ROUTE_IPV4){
+			return false;
+		}
+		return false;
+	}
 }
