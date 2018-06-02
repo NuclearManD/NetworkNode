@@ -11,7 +11,7 @@ import nuclear.slitherio.uint256_t;
 
 public class ModTransaction extends Transaction {
 
-	private static final byte TRANSACTION_REG_DNS = 10;
+	public static final byte TRANSACTION_REG_DNS = 10;
 	public ModTransaction(byte[] packed) {
 		super(packed);
 	}
