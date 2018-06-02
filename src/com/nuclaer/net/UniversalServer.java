@@ -98,5 +98,8 @@ public class UniversalServer extends Server {
 				}
 			}
 		}).start();
+		
+		USReq req = new USReq(USReq.LOCALHOST);
+		io.println(req.get("http://google.com"));
 	}
 }
