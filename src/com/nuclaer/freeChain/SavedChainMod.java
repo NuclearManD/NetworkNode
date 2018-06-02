@@ -23,7 +23,7 @@ public class SavedChainMod extends BlockchainBase{
 	}
 
 	synchronized public void addPair(DaughterPair p) {
-		DaughterPairMod pair=(DaughterPairMod)p;
+		DaughterPair pair=p;
 		addTransaction(pair.tr);
 		daughters.addBlock(pair.block);
 	}
@@ -43,7 +43,7 @@ public class SavedChainMod extends BlockchainBase{
 	synchronized public Block getDaughter(byte[] hash) {
 		daughters.update(); // in case another program added more
 		for(Block b:daughters) {
-			BlockMod i=(BlockMod)b;
+			Block i=b;
 			if(Arrays.equals(i.getHash(),hash))return i;
 		}
 		return null;
@@ -65,7 +65,7 @@ public class SavedChainMod extends BlockchainBase{
 		getCurrent().addTransaction(t);
 	}
 	synchronized public boolean addBlock(Block b){
-		BlockMod block=(BlockMod)b;
+		Block block=b;
 		chain.update(); // in case some other program added to the blockchain first
 		if(block==null)
 			return false;

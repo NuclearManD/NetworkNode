@@ -39,7 +39,7 @@ public class Node{
 		}catch(IOException e){
 			io.println("Unable to start Universal Server.");
 		}
-		new Bridge().start(8080);
+		new Bridge().start(80);
 	}
 	public static void main(String[] args) {
 		io.println("Node preinit...");

@@ -69,7 +69,9 @@ public class NodeServer extends Server {
 		byte[] response="OK".getBytes(StandardCharsets.UTF_8);
 		byte data[]=Arrays.copyOfRange(in,1,in.length);
 		if(cmd==CMD_ADD_PAIR) {
-			DaughterPair pair=DaughterPair.deserialize(data);
+			log.println("Request to add Daughter Pair...");
+			DaughterPair pair=DaughterPairMod.deserialize(data);
+			log.println("Deserialized...");
 			if(pair.verify()) {
 				blockchain.addPair(pair);
 				log.println("Added Daughter Pair:");
