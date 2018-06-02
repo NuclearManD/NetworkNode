@@ -6,6 +6,8 @@ import java.util.List;
 
 import com.nuclaer.freeChain.NodeServer;
 import com.nuclaer.net.NetworkRelay;
+import com.nuclaer.net.UniversalServer;
+
 import nuclear.blocks.node.ExternalNode;
 import nuclear.slithercrypto.ECDSAKey;
 import nuclear.slitherge.top.io;
@@ -29,6 +31,12 @@ public class Node{
 			relay.start();
 		}catch(IOException e){
 			io.println("Unable to start Network Relay.");
+		}
+		UniversalServer server=new UniversalServer(8081,this.server.blockchain);
+		try {
+			server.start();
+		}catch(IOException e){
+			io.println("Unable to start Universal Server.");
 		}
 	}
 	public static void main(String[] args) {
