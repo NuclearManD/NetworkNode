@@ -16,6 +16,7 @@ import java.util.Arrays;
 import com.nuclaer.nnutil.Logger;
 
 import nuclear.slithercrypto.blockchain.BlockchainBase;
+import nuclear.slitherge.top.io;
 import nuclear.slithernet.Server;
 
 public class UniversalServer extends Server {
@@ -66,12 +67,19 @@ public class UniversalServer extends Server {
 					tmp+=new String(result,StandardCharsets.UTF_8);
 					result=new byte[256];
 				}
-				return tmp.getBytes();
+				result= tmp.getBytes();
 			}catch(Exception e){
 				result=ERR_MSG_NO_CONN.getBytes();
 			}
 		}
-		return result;
+		byte[] q=Arrays.copyOf(sender, result.length+16);
+		for(int i=0;i<8;i++){
+			q[i+8]=endpoint[i];
+		}
+		for(int i=0;i<result.length;i++){
+			q[i+16]=result[i];
+		}
+		return q;
 	}
 	public void start() throws IOException{
 		sok = new ServerSocket(port);
@@ -90,13 +98,8 @@ public class UniversalServer extends Server {
 				}
 			}
 		}).start();
-		try {
-			Thread.sleep(200);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		byte[] j={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,98, 99, 58, 47, 47, 103, 97, 121, 46, 99, 111, 109, 47, 115, 104, 105, 116, 46, 112, 121, 63, 117, 61, 50, 35, 116, 120, 116};
-		easyServe(j);
+		
+		USReq req = new USReq(USReq.LOCALHOST);
+		io.println(req.get("http://google.com"));
 	}
 }

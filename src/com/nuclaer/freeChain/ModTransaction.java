@@ -11,6 +11,7 @@ import nuclear.slitherio.uint256_t;
 
 public class ModTransaction extends Transaction {
 
+	private static final byte TRANSACTION_REG_DNS = 10;
 	public ModTransaction(byte[] packed) {
 		super(packed);
 	}
@@ -47,5 +48,22 @@ public class ModTransaction extends Transaction {
 		}
 		return new DaughterPairMod(new ModTransaction(publickey,data,TRANSACTION_STORE_FILE),tmp);
 	}
-
+	public static Transaction registerDNS(byte[] publickey,byte[] priKey, String domain){
+		ECDSAKey key=new ECDSAKey(publickey,priKey);
+		byte data[]=new byte[TRANSACTION_LENGTH];
+		byte[] byte_meta=domain.getBytes(StandardCharsets.UTF_8);
+		data[32]=(byte) byte_meta.length;
+		int n=33;
+		for(byte i:byte_meta){
+			data[n]=i;
+			n++;
+		}
+		n=data.length-SIG_LEN;
+		byte[] sig=key.sign(Arrays.copyOf(data, TRANSACTION_LENGTH-SIG_LEN));
+		for(byte i:sig) {
+			data[n]=i;
+			n++;
+		}
+		return new ModTransaction(publickey,data,TRANSACTION_REG_DNS);
+	}
 }
