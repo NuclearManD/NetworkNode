@@ -109,8 +109,12 @@ public class NodeServer extends Server {
 					while(true){
 						int bt=(int) (System.currentTimeMillis()/1000-blockchain.getBlockByIndex(blockchain.length()-1).getTimestamp());
 						if(blockchain.getPriority(pubkey)<bt){
+							blockchain.getCurrent().setLastBlockHash(blockchain.getBlockByIndex(blockchain.length()-1).getHash());
 							blockchain.getCurrent().sign(key);
-							blockchain.commit();
+							if(blockchain.commit())
+								log.println("Signed block "+Arrays.toString(blockchain.getBlockByIndex(blockchain.length()-1).getHash()));
+							else
+								log.println("ERROR COMMITING BLOCK!");
 						}
 						io.waitMillis(15000);
 							
