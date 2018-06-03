@@ -28,7 +28,7 @@ public class NodeServer extends Server {
 	byte[] pubkey;
 	private ECDSAKey key;
 	Logger log=new Logger("Public Node");
-	public NodeServer(int bt, ECDSAKey key) {
+	public NodeServer(ECDSAKey key) {
 		super(1152);
 		pubkey=key.getPublicKey();
 		this.key=key;
@@ -112,7 +112,7 @@ public class NodeServer extends Server {
 							blockchain.getCurrent().setLastBlockHash(blockchain.getBlockByIndex(blockchain.length()-1).getHash());
 							blockchain.getCurrent().sign(key);
 							if(blockchain.commit())
-								log.println("Signed block "+Arrays.toString(blockchain.getBlockByIndex(blockchain.length()-1).getHash()));
+								log.println("Signed block "+Base64.getEncoder().encodeToString(blockchain.getBlockByIndex(blockchain.length()-1).getHash()));
 							else
 								log.println("ERROR COMMITING BLOCK!");
 						}

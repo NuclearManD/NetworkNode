@@ -18,7 +18,7 @@ public class Node{
 	List<ExternalNode> nodes;
 	ECDSAKey key;
 	String keypath=System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/keys/main.key";
-	public Node(int bt) {
+	public Node() {
 		if(new File(keypath).exists())
 			key=new ECDSAKey(keypath);
 		else{
@@ -26,7 +26,7 @@ public class Node{
 			key=new ECDSAKey();
 			key.save(keypath);
 		}
-		server=new NodeServer(bt, key);
+		server=new NodeServer(key);
 		NetworkRelay relay=new NetworkRelay(1153);
 		try {
 			relay.start();
@@ -43,7 +43,7 @@ public class Node{
 	}
 	public static void main(String[] args) {
 		io.println("Node preinit...");
-		new Node(30000);
+		new Node();
 	}
 
 }

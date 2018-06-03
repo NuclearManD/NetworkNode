@@ -1,31 +1,32 @@
 import nuclear.slitherge.top.io;
 
 public class Main {
-	public static int blocktime;
 	public static void main(String[] args) {
 		boolean startNode=false;
 		boolean startWallet=false;
-		blocktime=512;// in seconds
+		boolean startWebDev=false;
 		for(String i:args){
 			if(i.equalsIgnoreCase("-n"))
 				startNode=true;
 			else if(i.equalsIgnoreCase("-w"))
 				startWallet=true;
-			else if(i.startsWith("-bt:")) // in SECONDS
-				blocktime=Integer.parseInt(i.substring(4));
+			else if(i.equalsIgnoreCase("-D"))
+				startWebDev=true;
 		}
 		if(startNode){
 			new Thread(new Runnable() {
 				public void run() {
-					new Node(blocktime*1000);
+					new Node();
 				}
 			}).start();
 		}
-		/*try{
-			Thread.sleep(12000);
-		}catch(Exception e){
-			
-		}///*/
+		if(startWebDev){
+			new Thread(new Runnable() {
+				public void run() {
+					new WebUtil();
+				}
+			}).start();
+		}
 		if(startWallet){
 			new WalletMain();
 		}
@@ -34,8 +35,7 @@ public class Main {
 			io.println(" OPTIONS          DESCRIPTION");
 			io.println("   -n -N           Start a node");
 			io.println("   -w -W           Start a wallet");
-			io.println("   -bt [seconds]   Specify block time");
-			io.println("                   > Default is 512");
+			io.println("   -d -D           Start blockchain web developer");
 		}
 	}
 

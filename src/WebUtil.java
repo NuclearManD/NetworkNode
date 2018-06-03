@@ -15,6 +15,7 @@ public class WebUtil extends JFrame {
 	private JTextField domainName;
 
 	public WebUtil(){
+		setBounds(100,100,480,256);
 		setTitle("Website Builder");
 		getContentPane().setLayout(null);
 		
@@ -46,6 +47,12 @@ public class WebUtil extends JFrame {
 		JButton btnUpload = new JButton("Upload");
 		btnUpload.setBounds(365, 10, 89, 23);
 		getContentPane().add(btnUpload);
+		
+		updateLists();
+		
+		setVisible(true);
+	}
+	private void updateLists() {
 		
 	}
 }
