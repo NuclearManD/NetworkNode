@@ -112,13 +112,17 @@ public class WalletMain implements Runnable {
 				iface.setNetErr(false);
 				return -1;
 			}
-			i++;
 			for(Block block:blocks){
-				if(manager.addBlock(block))
+				if(manager.addBlock(block)){
 					n++;
-				else
+					i++;
+				}else
 					break;
 			}
+			gui.networkLabel.setText("Downloaded "+i+" blocks so far...");
+			int s=blocks.size();
+			if(s<32)
+				break;
 		}
 		log.println("Downloaded "+n+" new blocks.");
 		return n;
