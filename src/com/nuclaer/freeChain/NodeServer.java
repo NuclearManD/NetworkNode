@@ -26,6 +26,7 @@ public class NodeServer extends Server {
 	public static final byte[] RESULT_SUCCESS = "OK".getBytes(StandardCharsets.UTF_8);
 	public static final byte CMD_GET_DAUGHTER = 3;
 	public static final byte CMD_GET_BLOCKS = 4;
+	private static final int RESPONSE_SIZE_LIMIT = 1024*1024;
 	public BlockchainBase blockchain;
 	byte[] pubkey;
 	private ECDSAKey key;
@@ -89,22 +90,18 @@ public class NodeServer extends Server {
 			}
 		}else if(cmd==CMD_GET_BLOCKS&&data.length==8){
 			int index=(int)SlitherS.bytesToLong(data);
-			int num = blockchain.length()-index;
-			boolean err=false;
-			if(num<1){
-				err=true;
+			if(index>=blockchain.length()){
 				log.println("Client requested block "+index+" onward.  Those blocks do not exist.");
 				response=new byte[1];
 				response[0]=0x55;
-			}else if(num>32){
-				num=32; // send only 32 blocks at a time.
-			}
-			num+=index; // num is now the # of the last block
-			log.println("Sending blocks "+index+"-"+num+" to client...");
-			if(!err){
+			}else{
+				int num = index;
 				ByteArrayOutputStream stream =new ByteArrayOutputStream();
-				for(int i=index;i<num;i++){
+				for(int i=index;i<blockchain.length();i++){
 					byte[] packed=blockchain.getBlockByIndex(i).pack();
+					if(packed.length+stream.size()>RESPONSE_SIZE_LIMIT)
+						break;
+					num++;
 					try {
 						stream.write(SlitherS.longToBytes(packed.length));
 						stream.write(packed);
@@ -114,6 +111,7 @@ public class NodeServer extends Server {
 						response[0]=0x55;
 					}
 				}
+				log.println("Sending blocks "+index+"-"+num+" to client...");
 				response=stream.toByteArray();
 			}
 		}else if(cmd==CMD_GET_DAUGHTER&&data.length==32){
