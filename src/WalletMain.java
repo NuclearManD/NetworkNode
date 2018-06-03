@@ -27,7 +27,7 @@ public class WalletMain implements Runnable {
 	WalletControl gui;
 	Logger log=new Logger("Wallet");
 	public WalletMain() {
-		nodeAdr="localhost";//nuclear.blocks.wallet.Main.nodeAdr;//JOptionPane.showInputDialog(null, "What IP is the node at?");
+		nodeAdr="68.4.23.92";//nuclear.blocks.wallet.Main.nodeAdr;//JOptionPane.showInputDialog(null, "What IP is the node at?");
 		if(new File(keypath).exists())
 			key=new ECDSAKey(keypath);
 		else{
@@ -75,7 +75,7 @@ public class WalletMain implements Runnable {
 			}else
 				gui.coinCountLabel.setText("Error connecting to network.  "+chain.length()+" main blocks loaded.");
 			try {
-				for(int i=0;i<1000*60;i++){
+				for(int i=0;i<1000;i++){
 					Thread.sleep(15);
 					if(gui.selReconnect){
 						nodeAdr=JOptionPane.showInputDialog(null, "What IP is the node at?");
