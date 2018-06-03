@@ -36,16 +36,23 @@ public class Bridge implements HttpHandler{
 		URI Uri=t.getRequestURI();
 		log.println("new request: "+Uri.toString());
 		String[] path=Uri.getPath().replaceFirst("/", "").split("/");
-		String uri=path[0]+"://"+path[1];
-		for(int i=2;i<path.length;i++){
-			uri+="/"+path[i];
+		String str="Error: path length was invalid!  Path format: /[protocol; eg http or bc]/[domain]/[rest of path]\n"+
+		"\t example of correct format: /bc/nti.com/index.html";
+		if(path.length>=2){
+			String uri=path[0]+"://"+path[1];
+			for(int i=2;i<path.length;i++){
+				uri+="/"+path[i];
+			}
+			if(Uri.getQuery()!=null)
+				uri+="?"+Uri.getQuery();
+			if(Uri.getFragment()!=null)
+				uri+="#"+Uri.getFragment();
+			log.println("Query: "+uri);
+			str=req.get(uri);
+			if(str.isEmpty())
+				str="Bridge Error: The reply contained no data. [so you got this message instead...]";
 		}
-		if(Uri.getQuery()!=null)
-			uri+="?"+Uri.getQuery();
-		if(Uri.getFragment()!=null)
-			uri+="#"+Uri.getFragment();
-		log.println("Query: "+uri);
-		byte[] response=req.get(uri).getBytes();
+		byte[] response=str.getBytes();
 		t.sendResponseHeaders(200, response.length);
 		OutputStream os = t.getResponseBody();
 		os.write(response);

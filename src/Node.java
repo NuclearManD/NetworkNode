@@ -26,7 +26,7 @@ public class Node{
 			key=new ECDSAKey();
 			key.save(keypath);
 		}
-		server=new NodeServer(bt, key.getPublicKey());
+		server=new NodeServer(bt, key);
 		NetworkRelay relay=new NetworkRelay(1153);
 		try {
 			relay.start();

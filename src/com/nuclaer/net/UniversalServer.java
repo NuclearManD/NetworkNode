@@ -10,7 +10,6 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import com.nuclaer.freeChain.ModTransaction;
 import com.nuclaer.nnutil.Logger;
 
 import nuclear.slithercrypto.blockchain.Block;
@@ -71,7 +70,7 @@ public class UniversalServer extends Server {
 				int transactions=b.numTransactions();
 				for(int j=0;j<transactions;j++){
 					Transaction t=b.getTransaction(j);
-					if(t.type==ModTransaction.TRANSACTION_REG_DNS&&Arrays.equals(t.getMeta(),access.getBytes())){
+					if(t.type==Transaction.TRANSACTION_REG_DNS&&Arrays.equals(t.getMeta(),access.getBytes())){
 						address=t.getSender();
 						i=len;
 						break;

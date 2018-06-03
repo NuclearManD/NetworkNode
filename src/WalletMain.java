@@ -5,13 +5,13 @@ import java.util.Base64;
 
 import javax.swing.JOptionPane;
 
-import com.nuclaer.freeChain.SavedChainMod;
 import com.nuclaer.nnutil.Logger;
 
 import nuclear.blocks.client.ClientIface;
 import nuclear.slithercrypto.ECDSAKey;
 import nuclear.slithercrypto.blockchain.Block;
 import nuclear.slithercrypto.blockchain.BlockchainBase;
+import nuclear.slithercrypto.blockchain.SavedChain;
 
 public class WalletMain implements Runnable {
 	String basepath=System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks";
@@ -23,7 +23,7 @@ public class WalletMain implements Runnable {
 	String nodeAdr;
 	
 	ClientIface iface;
-	SavedChainMod chain;
+	SavedChain chain;
 	WalletControl gui;
 	Logger log=new Logger("Wallet");
 	public WalletMain() {
@@ -36,7 +36,7 @@ public class WalletMain implements Runnable {
 			key.save(keypath);
 		}
 		log.println("Got key...");
-		chain=new SavedChainMod(blockchainStorePlace);
+		chain=new SavedChain(blockchainStorePlace);
 		try {
 			iface=new ClientIface(nodeAdr);
 		} catch (IOException e) {

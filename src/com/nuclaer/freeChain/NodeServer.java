@@ -8,7 +8,7 @@ import java.util.Base64;
 
 import com.nuclaer.nnutil.Logger;
 
-import nuclear.blocks.node.NodeMiner;
+import nuclear.slithercrypto.ECDSAKey;
 import nuclear.slithercrypto.blockchain.Block;
 import nuclear.slithercrypto.blockchain.BlockchainBase;
 import nuclear.slithercrypto.blockchain.DaughterPair;
@@ -25,38 +25,23 @@ public class NodeServer extends Server {
 	public static final byte CMD_GET_DAUGHTER = 3;
 	public BlockchainBase blockchain;
 	byte[] pubkey;
-	protected NodeMiner minerObject;
-
+	private ECDSAKey key;
 	Logger log=new Logger("Public Node");
-	public NodeServer(byte[] Key) {
+	public NodeServer(int bt, ECDSAKey key) {
 		super(1152);
+		pubkey=key.getPublicKey();
+		this.key=key;
 		log.println("Loading blockchain...");
-		blockchain=new SavedChainMod(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/blockchain");
+		blockchain=new SavedChain(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/blockchain");
 		log.println("Loaded; blockchain contains "+blockchain.length()+" normal blocks.");
-		log.println("Node public key: "+Base64.getEncoder().encodeToString(Key));
-		log.println("Node balance: "+blockchain.getCoinBalance(Key)+" KiB ");
-		pubkey=Key;
-		try {
-			start();
-			minerObject=new NodeMiner(blockchain,new Logger("Miner"),true,pubkey);
-			minerObject.start(8);
-		} catch (IOException e) {
-			log.println("Could not bind port");
+		log.println("Node public key: "+Base64.getEncoder().encodeToString(pubkey));
+		log.println("Node balance: "+blockchain.getCoinBalance(pubkey)+" KiB ");
+		if(blockchain.getPriority(pubkey)==100){
+			log.println("Node needs to register!  Registering now...");
+			blockchain.addTransaction(Transaction.register(pubkey, key.getPrivateKey()));
 		}
-	}
-	public NodeServer(int bt, byte[] Key) {
-		super(1152);
-		log.println("Starting...");
-		log.println("Loading blockchain...");
-		blockchain=new SavedChainMod(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/blockchain");
-		log.println("Loaded; blockchain contains "+blockchain.length()+" normal blocks.");
-		log.println("Node public key: "+Base64.getEncoder().encodeToString(Key));
-		log.println("Node balance: "+blockchain.getCoinBalance(Key)+" KiB ");
-		pubkey=Key;
 		try {
 			start();
-			minerObject=new NodeMiner(blockchain,new Logger("Miner"),true,pubkey, bt);
-			minerObject.start(8);
 		} catch (IOException e) {
 			log.println("Could not bind port");
 		}
@@ -67,7 +52,7 @@ public class NodeServer extends Server {
 		byte data[]=Arrays.copyOfRange(in,1,in.length);
 		if(cmd==CMD_ADD_PAIR) {
 			log.println("Request to add Daughter Pair...");
-			DaughterPair pair=DaughterPairMod.deserialize(data);
+			DaughterPair pair=DaughterPair.deserialize(data);
 			log.println("Deserialized...");
 			if(pair.verify()) {
 				blockchain.addPair(pair);
@@ -111,6 +96,25 @@ public class NodeServer extends Server {
 		return response;
 	}
 	public void start() throws IOException{
+		try{
+			new Thread(new Runnable(){
+				@Override
+				public void run() {
+					while(true){
+						int bt=(int) (System.currentTimeMillis()/1000-blockchain.getBlockByIndex(blockchain.length()-1).getTimestamp());
+						if(blockchain.getPriority(pubkey)<bt){
+							blockchain.getCurrent().sign(key);
+							blockchain.commit();
+						}
+							
+					}
+				}
+				
+			}).start();
+		}catch(Exception e){
+			log.println("ERROR STARTING VERIFIER THREAD!");
+			e.printStackTrace();
+		}
 		log.println("Opening port "+port);
 		sok = new ServerSocket(port);
 		log.println("Starting Thread...");
