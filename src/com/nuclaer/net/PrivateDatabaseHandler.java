@@ -34,28 +34,28 @@ public class PrivateDatabaseHandler extends Server {
 		auth=Arrays.copyOf(passcode, 32);
 		bc=c;
 		key=k;
-		io.println("Database IFace loaded.");
+		try {
+			io.println("Database IFace loaded.");
+			this.start();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	protected byte[] easyServe(byte[] in){
 		byte[] response={MARK_ERR};
 		byte[] data=decrypt(auth,in);
-		byte[] args=Arrays.copyOfRange(data, 1, data.length);
+		byte[] args=Arrays.copyOfRange(data, 1, data.length-1);
 		io.println("Database request: CMD="+data[0]);
 		if(data[0]==CMD_READFILE){
-			String filename=new String(args,StandardCharsets.UTF_8);
-			io.println("Database : request for file '"+filename+"'");
-			byte[] tmp=bc.readFile(filename, key.getPublicKey());
+			byte[] tmp=bc.readFile(new String(args,StandardCharsets.UTF_8), key.getPublicKey());
 			if(tmp!=null){
 				response=new byte[tmp.length+1];
 				for(int i=0;i<tmp.length;i++)
 					response[i+1]=tmp[i];
 				response[0]=MARK_TX_;
-				io.println("Database : found file, sending...");
-			}else{
-				io.println("Database file request : file not found!");
+			}else
 				response=null;
-			}
 		}else if(data[0]==CMD_GETBYHASH){
 			Block tmp=bc.getDaughter(Arrays.copyOf(args,32));
 			if(tmp!=null){
@@ -76,7 +76,7 @@ public class PrivateDatabaseHandler extends Server {
 				response=null;
 		}else if(data[0]==CMD_UPLOADBLOCK){
 			DaughterPair pair=Transaction.makeFile(key.getPublicKey(), key.getPublicKey(),
-					Arrays.copyOfRange(args, 16, args.length), bc.getCurrent().getHash(), new String(Arrays.copyOf(args, 16),StandardCharsets.UTF_8));
+					Arrays.copyOfRange(args, 16, args.length-1), bc.getCurrent().getHash(), new String(Arrays.copyOf(args, 16),StandardCharsets.UTF_8));
 			bc.addPair(pair);
 			response[0]=MARK_OK_;
 		}else if(data[0]==CMD_UPLOADTRANS){

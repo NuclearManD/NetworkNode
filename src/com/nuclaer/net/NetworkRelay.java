@@ -13,7 +13,6 @@ public class NetworkRelay extends Server implements Runnable {
 	public static final byte[] ERROR_IN_TX={0x54, 0x58, 0x45};
 	public static final byte[] SENT_RESPONSE={0x4F, 0x4B, 0x3B};
 	protected RoutingTable router=new RoutingTable();
-	
 	public NetworkRelay(int port) {
 		super(port);
 		io.println("Starting network relay...");
