@@ -1,6 +1,7 @@
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 
 import javax.swing.JOptionPane;
@@ -100,20 +101,24 @@ public class WalletMain implements Runnable {
 		int i=manager.length();
 		int n=0;
 		while(true){
-			log.println("Downloading block #"+i);
-			Block block=iface.downloadByIndex(i);
+			log.println("Downloading blocks from #"+i);
+			ArrayList<Block> blocks=iface.getBlocks(i);
+			if(blocks==null)
+				break;
 			if(iface.isNetErr()){
 				log.println("Network error!");
 				iface.setNetErr(false);
 				return -1;
 			}
 			i++;
-			if(manager.addBlock(block))
-				n++;
-			else{
-				log.println("Downloaded "+n+" new blocks.");
-				return n;
+			for(Block block:blocks){
+				if(manager.addBlock(block))
+					n++;
+				else
+					break;
 			}
 		}
+		log.println("Downloaded "+n+" new blocks.");
+		return n;
 	}
 }
