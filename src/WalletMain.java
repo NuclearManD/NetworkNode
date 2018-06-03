@@ -27,7 +27,7 @@ public class WalletMain implements Runnable {
 	WalletControl gui;
 	Logger log=new Logger("Wallet");
 	public WalletMain() {
-		nodeAdr="68.4.23.92";//nuclear.blocks.wallet.Main.nodeAdr;//JOptionPane.showInputDialog(null, "What IP is the node at?");
+		nodeAdr="68.4.23.94";//nuclear.blocks.wallet.Main.nodeAdr;//JOptionPane.showInputDialog(null, "What IP is the node at?");
 		if(new File(keypath).exists())
 			key=new ECDSAKey(keypath);
 		else{
@@ -45,8 +45,6 @@ public class WalletMain implements Runnable {
 		log.println("Loading GUI");
 		gui=new WalletControl(chain,key,iface);
 		gui.addressLabel.setText("Address: "+encode(key.getPublicKey()));
-		gui.remove(gui.kibAmt);
-		gui.remove(gui.txtrAddress);
 		gui.coinCountLabel.setText("Waiting...");
 		gui.setVisible(true);
 		log.println("GUI loaded.");
@@ -65,21 +63,23 @@ public class WalletMain implements Runnable {
 	}
 
 	public void run() {
+		gui.networkLabel.setText("Please wait, syncing to network...");
 		while(true) {
-			gui.coinCountLabel.setText("Please wait, connecting to network...");
 			log.println("Downloading blocks...");
 			int q;
 			q=downloadBlockchain(chain);
 			if(q!=-1){
-				gui.coinCountLabel.setText("Welcome to the database.  "+chain.length()+" main blocks loaded.");
+				gui.networkLabel.setText("Welcome to the database.  "+chain.length()+" main blocks loaded.");
 			}else
-				gui.coinCountLabel.setText("Error connecting to network.  "+chain.length()+" main blocks loaded.");
+				gui.networkLabel.setText("Error connecting to network.  "+chain.length()+" main blocks loaded.");
+			gui.updateBalance();
 			try {
 				for(int i=0;i<1000;i++){
 					Thread.sleep(15);
 					if(gui.selReconnect){
 						nodeAdr=JOptionPane.showInputDialog(null, "What IP is the node at?");
 						try {
+							iface.close();
 							iface=new ClientIface(nodeAdr);
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -91,6 +91,8 @@ public class WalletMain implements Runnable {
 			} catch (InterruptedException e) {
 				break;
 			}
+			if(!gui.isDisplayable())
+				return;
 		}
 	}
 
@@ -101,6 +103,7 @@ public class WalletMain implements Runnable {
 		int n=0;
 		while(true){
 			log.println("Downloading block #"+i);
+			gui.networkLabel.setText("Downloading block #"+i);
 			Block block=iface.downloadByIndex(i);
 			if(iface.isNetErr()){
 				log.println("Network error!");

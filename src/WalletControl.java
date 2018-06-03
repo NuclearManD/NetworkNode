@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import com.nuclaer.nnutil.Logger;
@@ -23,12 +24,12 @@ public class WalletControl extends WalletGUI {
 
 
 	Logger log=new Logger("Wallet");
+
+
 	public WalletControl(BlockchainBase man1, ECDSAKey key1, ClientIface iface1) {
 		super(man1, key1, iface1);
-		btnSend.setEnabled(false);
 		btnReconnect.setText("Change Node");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		remove(tmp);
 	}
 
 
@@ -52,11 +53,7 @@ public class WalletControl extends WalletGUI {
 						lasthash=man.getBlockByIndex(man.length()-1).getHash();
 					new Thread(new Runnable() {
 					     public void run() {
-					    	 mining++;
-					    	 miningUpd();
 					    	 iface.uploadPair(Transaction.makeFile(key.getPublicKey(), key.getPrivateKey(), buffer, lasthash, file.getName()));
-							 mining--;
-					    	 miningUpd();
 					     }
 					}).start();
 				} catch (Exception e1) {
