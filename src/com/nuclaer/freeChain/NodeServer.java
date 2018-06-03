@@ -1,5 +1,6 @@
 package com.nuclaer.freeChain;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
@@ -24,6 +25,7 @@ public class NodeServer extends Server {
 	public static final byte CMD_GET_BLOCK = 2;
 	public static final byte[] RESULT_SUCCESS = "OK".getBytes(StandardCharsets.UTF_8);
 	public static final byte CMD_GET_DAUGHTER = 3;
+	public static final byte CMD_GET_BLOCKS = 4;
 	public BlockchainBase blockchain;
 	byte[] pubkey;
 	private ECDSAKey key;
@@ -51,6 +53,7 @@ public class NodeServer extends Server {
 		byte cmd=in[0];
 		byte[] response="OK".getBytes(StandardCharsets.UTF_8);
 		byte data[]=Arrays.copyOfRange(in,1,in.length);
+		//double secs=System.currentTimeMillis();
 		if(cmd==CMD_ADD_PAIR) {
 			log.println("Request to add Daughter Pair...");
 			DaughterPair pair=DaughterPair.deserialize(data);
@@ -78,11 +81,40 @@ public class NodeServer extends Server {
 			int index=(int)SlitherS.bytesToLong(data);
 			log.println("Sending block "+index+" to client...");
 			if(index<blockchain.length())
-				return blockchain.getBlockByIndex(index).pack();
+				response=blockchain.getBlockByIndex(index).pack();
 			else{
 				log.println("Blockchain is not as long as "+index+" blocks.");
 				response=new byte[1];
 				response[0]=0x55;
+			}
+		}else if(cmd==CMD_GET_BLOCKS&&data.length==8){
+			int index=(int)SlitherS.bytesToLong(data);
+			int num = blockchain.length()-index;
+			boolean err=false;
+			if(num<1){
+				err=true;
+				log.println("Client requested block "+index+" onward.  Those blocks do not exist.");
+				response=new byte[1];
+				response[0]=0x55;
+			}else if(num>32){
+				num=32; // send only 32 blocks at a time.
+			}
+			num+=index; // num is now the # of the last block
+			log.println("Sending blocks "+index+"-"+num+" to client...");
+			if(!err){
+				ByteArrayOutputStream stream =new ByteArrayOutputStream();
+				for(int i=index;i<num;i++){
+					byte[] packed=blockchain.getBlockByIndex(i).pack();
+					try {
+						stream.write(SlitherS.longToBytes(packed.length));
+						stream.write(packed);
+					} catch (Exception e) {
+						e.printStackTrace();
+						response=new byte[1];
+						response[0]=0x55;
+					}
+				}
+				response=stream.toByteArray();
 			}
 		}else if(cmd==CMD_GET_DAUGHTER&&data.length==32){
 			log.println("Sending daughter block "+Base64.getEncoder().encodeToString(data)+" to client...");
@@ -94,6 +126,8 @@ public class NodeServer extends Server {
 				response=block.pack();
 		}else
 			response="UREC".getBytes(StandardCharsets.UTF_8);
+		//secs=System.currentTimeMillis()-secs;
+		//secs=secs/1000.0;
 		return response;
 	}
 	public void start() throws IOException{
@@ -148,5 +182,6 @@ public class NodeServer extends Server {
 	
 	protected void onError(Exception e) {
 		log.println("ERROR: "+e.getMessage());
+		e.printStackTrace();
 	}
 }
