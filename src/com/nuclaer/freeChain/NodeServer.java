@@ -14,6 +14,7 @@ import nuclear.slithercrypto.blockchain.BlockchainBase;
 import nuclear.slithercrypto.blockchain.DaughterPair;
 import nuclear.slithercrypto.blockchain.SavedChain;
 import nuclear.slithercrypto.blockchain.Transaction;
+import nuclear.slitherge.top.io;
 import nuclear.slitherio.SlitherS;
 import nuclear.slithernet.Server;
 
@@ -100,12 +101,18 @@ public class NodeServer extends Server {
 			new Thread(new Runnable(){
 				@Override
 				public void run() {
+					if(blockchain.length()==0){
+						Block block=new Block(new byte[32],new byte[0]);
+						block.sign(key);
+						blockchain.addBlock(block);
+					}
 					while(true){
 						int bt=(int) (System.currentTimeMillis()/1000-blockchain.getBlockByIndex(blockchain.length()-1).getTimestamp());
 						if(blockchain.getPriority(pubkey)<bt){
 							blockchain.getCurrent().sign(key);
 							blockchain.commit();
 						}
+						io.waitMillis(15000);
 							
 					}
 				}
