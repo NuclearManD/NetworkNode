@@ -7,6 +7,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import com.nuclaer.nnutil.Logger;
+
 import nuclear.blocks.client.ClientIface;
 import nuclear.blocks.wallet.ui.RemoteFileSelector;
 import nuclear.blocks.wallet.ui.WalletGUI;
@@ -14,13 +16,13 @@ import nuclear.slithercrypto.ECDSAKey;
 import nuclear.slithercrypto.blockchain.Block;
 import nuclear.slithercrypto.blockchain.BlockchainBase;
 import nuclear.slithercrypto.blockchain.Transaction;
-import nuclear.slitherge.top.io;
 
 public class WalletControl extends WalletGUI {
 
 	private static final long serialVersionUID = -403147653826986273L;
 
 
+	Logger log=new Logger("Wallet");
 	public WalletControl(BlockchainBase man1, ECDSAKey key1, ClientIface iface1) {
 		super(man1, key1, iface1);
 		btnSend.setEnabled(false);
@@ -68,11 +70,11 @@ public class WalletControl extends WalletGUI {
 					if(selector.selection==null)
 						return;
 					byte[] sel=selector.selection.getDaughterHash();
-					io.println(selector.selection.toString());
+					log.println(selector.selection.toString());
 					int us = fc.showSaveDialog(null);
 					if(us==JFileChooser.APPROVE_OPTION) {
 						File file=fc.getSelectedFile();
-						io.println("Saving...");
+						log.println("Saving File...");
 						try(FileOutputStream f=new FileOutputStream(file)){
 							Block bk=iface.downloadDaughter(sel);
 							byte[] data=bk.getData();
@@ -82,7 +84,7 @@ public class WalletControl extends WalletGUI {
 							e1.printStackTrace();
 							JOptionPane.showMessageDialog(null, "Error: Download failed!");
 						}
-						io.println("Done writing file.");
+						log.println("Done writing file.");
 					}
 			    }
 			}).start();

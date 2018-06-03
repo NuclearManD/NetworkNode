@@ -5,11 +5,13 @@ import java.util.Base64;
 
 import javax.swing.JOptionPane;
 
-import com.nuclaer.freeChain.SavedChainMod;
+import com.nuclaer.nnutil.Logger;
 
 import nuclear.blocks.client.ClientIface;
 import nuclear.slithercrypto.ECDSAKey;
-import nuclear.slitherge.top.io;
+import nuclear.slithercrypto.blockchain.Block;
+import nuclear.slithercrypto.blockchain.BlockchainBase;
+import nuclear.slithercrypto.blockchain.SavedChain;
 
 public class WalletMain implements Runnable {
 	String basepath=System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks";
@@ -21,10 +23,11 @@ public class WalletMain implements Runnable {
 	String nodeAdr;
 	
 	ClientIface iface;
-	SavedChainMod chain;
+	SavedChain chain;
 	WalletControl gui;
+	Logger log=new Logger("Wallet");
 	public WalletMain() {
-		nodeAdr=nuclear.blocks.wallet.Main.nodeAdr;//JOptionPane.showInputDialog(null, "What IP is the node at?");
+		nodeAdr="localhost";//nuclear.blocks.wallet.Main.nodeAdr;//JOptionPane.showInputDialog(null, "What IP is the node at?");
 		if(new File(keypath).exists())
 			key=new ECDSAKey(keypath);
 		else{
@@ -32,20 +35,21 @@ public class WalletMain implements Runnable {
 			key=new ECDSAKey();
 			key.save(keypath);
 		}
-		io.println("Got key...");
-		chain=new SavedChainMod(blockchainStorePlace);
+		log.println("Got key...");
+		chain=new SavedChain(blockchainStorePlace);
 		try {
 			iface=new ClientIface(nodeAdr);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		io.println("Loading GUI");
+		log.println("Loading GUI");
 		gui=new WalletControl(chain,key,iface);
 		gui.addressLabel.setText("Address: "+encode(key.getPublicKey()));
-		gui.coinCountLabel.setText("Please wait, connecting to network...");
 		gui.remove(gui.kibAmt);
 		gui.remove(gui.txtrAddress);
+		gui.coinCountLabel.setText("Waiting...");
 		gui.setVisible(true);
+		log.println("GUI loaded.");
 		new Thread(this).start();
 	}
 	
@@ -62,11 +66,11 @@ public class WalletMain implements Runnable {
 
 	public void run() {
 		while(true) {
-			io.println("Downloading blocks...");
+			gui.coinCountLabel.setText("Please wait, connecting to network...");
+			log.println("Downloading blocks...");
 			int q;
-			q=iface.downloadBlockchain(chain);
+			q=downloadBlockchain(chain);
 			if(q!=-1){
-				io.println("Downloaded "+q+" new blocks.");
 				gui.coinCountLabel.setText("Welcome to the database.  "+chain.length()+" main blocks loaded.");
 			}else
 				gui.coinCountLabel.setText("Error connecting to network.  "+chain.length()+" main blocks loaded.");
@@ -89,5 +93,27 @@ public class WalletMain implements Runnable {
 			}
 		}
 	}
-	
+
+	public int downloadBlockchain(BlockchainBase manager){
+		iface.setNetErr(false);
+		manager.update();
+		int i=manager.length();
+		int n=0;
+		while(true){
+			log.println("Downloading block #"+i);
+			Block block=iface.downloadByIndex(i);
+			if(iface.isNetErr()){
+				log.println("Network error!");
+				iface.setNetErr(false);
+				return -1;
+			}
+			i++;
+			if(manager.addBlock(block))
+				n++;
+			else{
+				log.println("Downloaded "+n+" new blocks.");
+				return n;
+			}
+		}
+	}
 }
