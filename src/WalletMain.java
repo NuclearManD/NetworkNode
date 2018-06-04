@@ -110,10 +110,10 @@ public class WalletMain implements Runnable {
 				if(manager.addBlock(block)){
 					n++;
 					i++;
+					gui.networkLabel.setText("Downloaded "+i+" blocks so far...");
 				}else
 					break;
 			}
-			gui.networkLabel.setText("Downloaded "+i+" blocks so far...");
 			int s=blocks.size();
 			if(s<32)
 				break;
