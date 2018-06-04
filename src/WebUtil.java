@@ -10,6 +10,7 @@ import nuclear.slithercrypto.blockchain.BlockchainBase;
 import nuclear.slithercrypto.blockchain.SavedChain;
 import nuclear.slithercrypto.blockchain.Transaction;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import java.awt.event.ActionEvent;
@@ -29,7 +30,8 @@ public class WebUtil extends JFrame implements ActionListener{
 	private BlockchainBase man;
 	private ClientIface iface;
 	private ECDSAKey key;
-	JList<String> fileList = new JList<String>();
+	private DefaultListModel<String> files=new DefaultListModel<String>();
+	JList<String> fileList = new JList<String>(files);
 	JComboBox<String> domainSelect = new JComboBox<String>();
 	
 	public WebUtil(){
@@ -76,7 +78,16 @@ public class WebUtil extends JFrame implements ActionListener{
 		setVisible(true);
 	}
 	private void updateLists() {
-		
+		files.clear();
+		for(Transaction i:man.getPagesOf(key.getPublicKey())){
+			String n=new String(i.getMeta());
+			boolean q=false;
+			for(int j=0;j<files.size();j++){
+				if(files.get(j).equals(n))
+					q=true;
+			}
+			if(!q)files.addElement(n);
+		}
 	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -107,7 +118,7 @@ public class WebUtil extends JFrame implements ActionListener{
 
 					public void run() {
 						iface.downloadBlockchain(man);
-				    	 iface.uploadPair(Transaction.makeFile(key.getPublicKey(), key.getPrivateKey(), buffer, man.getBlockByIndex(man.length()-1).getHash(), file.getName()));
+				    	 iface.uploadPair(Transaction.makePage(key.getPublicKey(), key.getPrivateKey(), buffer, man.getBlockByIndex(man.length()-1).getHash(), file.getName()));
 				     }
 				}).start();
 			} catch (Exception e1) {
