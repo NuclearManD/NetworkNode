@@ -46,68 +46,75 @@ public class UniversalServer extends Server {
 		String protocol=uri.getScheme();
 		String access=uri.getAuthority();
 		String path="";
+		byte[] result=ERR_MSG_NO_DATA.getBytes();
 		if(uri.getPath()!=null)
 			path=uri.getPath();
 		if(uri.getQuery()!=null)
 			path+='?'+uri.getQuery();
 		if(uri.getFragment()!=null)
 			path+='#'+uri.getFragment();
-		
-		log.println("Request protocol: "+protocol);
-		log.println("Request path:     "+path);
-		
-		byte[] result=ERR_MSG_NO_DATA.getBytes();
-		if(protocol.equals("bc")){
-			if(uri.getPath()==null||uri.getPath().isEmpty())
-				path="index.html";
-			else
-				path=uri.getPath();
-			// now we need to search every transaction in the blockchain...
-			byte[] address=null;
-			int len=man.length();
-			for(int i=0;i<len;i++){
-				Block b=man.getBlockByIndex(i);
-				int transactions=b.numTransactions();
-				for(int j=0;j<transactions;j++){
-					Transaction t=b.getTransaction(j);
-					if(t.type==Transaction.TRANSACTION_REG_DNS&&Arrays.equals(t.getMeta(),access.getBytes())){
-						address=t.getSender();
-						i=len;
-						break;
+		if(access==null){
+			result=ERR_MSG_BC_DNF.getBytes();
+			log.println("Invalid request was submitted! access==null!");
+		}else{
+			
+			log.println("Request protocol: "+protocol);
+			log.println("Request path:     "+path);
+			
+			if(protocol.equals("bc")){
+				if(uri.getPath()==null||uri.getPath().isEmpty())
+					path="index.html";
+				else
+					path=uri.getPath();
+				// now we need to search every transaction in the blockchain...
+				byte[] address=null;
+				int len=man.length();
+				for(int i=0;i<len;i++){
+					Block b=man.getBlockByIndex(i);
+					int transactions=b.numTransactions();
+					for(int j=0;j<transactions;j++){
+						Transaction t=b.getTransaction(j);
+						if(t.type==Transaction.TRANSACTION_REG_DNS
+								&&Arrays.equals(t.getMeta()
+										,access.getBytes())){
+							address=t.getSender();
+							i=len;
+							break;
+						}
 					}
 				}
-			}
-			if(address==null)
-				result=ERR_MSG_BC_DNF.getBytes();
-			else{
-				path=path.replaceFirst("/", "");
-				result=man.readFile(path, address);
-				if(result==null){
-					result=man.readFile("404.html", address);
-					if(result==null)
-						result=ERR_MSG_BC_404.getBytes();
-					log.println("File "+path+" was not found.");
+				if(address==null)
+					result=ERR_MSG_BC_DNF.getBytes();
+				else{
+					path=path.replaceFirst("/", "");
+					result=man.readPage(path, address);
+					if(result==null){
+						result=man.readPage("404.html", address);
+						if(result==null)
+							result=ERR_MSG_BC_404.getBytes();
+						log.println("File "+path+" was not found.");
+					}
+					
 				}
-				
-			}
-		}else if(protocol.equals("http")){
-			String urlString = uri.toString();
-			try{
-				
-				URL url = new URL(urlString);
-				URLConnection conn = url.openConnection();
-				InputStream is = conn.getInputStream();
-				result=new byte[256];
-				String tmp="";
-				int len;
-				while((len=is.read(result))>0){
-					result=Arrays.copyOf(result, len);
-					tmp+=new String(result,StandardCharsets.UTF_8);
+			}else if(protocol.equals("http")){
+				String urlString = uri.toString();
+				try{
+					
+					URL url = new URL(urlString);
+					URLConnection conn = url.openConnection();
+					InputStream is = conn.getInputStream();
 					result=new byte[256];
+					String tmp="";
+					int len;
+					while((len=is.read(result))>0){
+						result=Arrays.copyOf(result, len);
+						tmp+=new String(result,StandardCharsets.UTF_8);
+						result=new byte[256];
+					}
+					result= tmp.getBytes();
+				}catch(Exception e){
+					result=ERR_MSG_NO_CONN.getBytes();
 				}
-				result= tmp.getBytes();
-			}catch(Exception e){
-				result=ERR_MSG_NO_CONN.getBytes();
 			}
 		}
 		byte[] q=Arrays.copyOf(sender, result.length+16);
@@ -140,5 +147,6 @@ public class UniversalServer extends Server {
 
 	protected void onError(Exception e) {
 		log.println("ERROR: "+e.getMessage());
+		e.printStackTrace();
 	}
 }

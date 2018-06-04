@@ -95,7 +95,7 @@ public class WebUtil extends JFrame implements ActionListener{
 		if(cmd.equals("upload")){
 			upload();
 		}else if(cmd.equals("claim")){
-			iface.uploadTransaction(Transaction.register(key.getPublicKey(), key.getPrivateKey()));
+			iface.uploadTransaction(Transaction.takeDomain(key.getPublicKey(), key.getPrivateKey(),domainName.getText()));
 		}else if(cmd.equals("release")){
 			
 		}

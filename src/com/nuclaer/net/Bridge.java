@@ -34,7 +34,7 @@ public class Bridge implements HttpHandler{
 
 	public void handle(HttpExchange t) throws IOException {
 		URI Uri=t.getRequestURI();
-		log.println("new request: "+Uri.toString());
+		log.println("new request: "+Uri.toString()+" from "+t.getRemoteAddress().getHostString());
 		String[] path=Uri.getPath().replaceFirst("/", "").split("/");
 		String str="Error: path length was invalid!  Path format: /[protocol; eg http or bc]/[domain]/[rest of path]\n"+
 		"\t example of correct format: /bc/nti.com/index.html";

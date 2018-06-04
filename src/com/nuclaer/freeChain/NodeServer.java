@@ -9,6 +9,7 @@ import java.util.Base64;
 
 import com.nuclaer.nnutil.Logger;
 
+import nuclear.blocks.node.SavedList;
 import nuclear.slithercrypto.ECDSAKey;
 import nuclear.slithercrypto.blockchain.Block;
 import nuclear.slithercrypto.blockchain.BlockchainBase;
@@ -26,17 +27,23 @@ public class NodeServer extends Server {
 	public static final byte[] RESULT_SUCCESS = "OK".getBytes(StandardCharsets.UTF_8);
 	public static final byte CMD_GET_DAUGHTER = 3;
 	public static final byte CMD_GET_BLOCKS = 4;
+	public static final byte CMD_ADD_NODE = 5;
+	public static final byte CMD_GET_NODES= 6;
 	private static final int RESPONSE_SIZE_LIMIT = 1024*1024;
 	public BlockchainBase blockchain;
 	byte[] pubkey;
 	private ECDSAKey key;
 	Logger log=new Logger("Public Node");
+	
+	SavedList nodes;
+	
 	public NodeServer(ECDSAKey key) {
 		super(1152);
 		pubkey=key.getPublicKey();
 		this.key=key;
 		log.println("Loading blockchain...");
 		blockchain=new SavedChain(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/blockchain");
+		nodes = new SavedList(System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/nodes.txt");
 		log.println("Loaded; blockchain contains "+blockchain.length()+" normal blocks.");
 		log.println("Node public key: "+Base64.getEncoder().encodeToString(pubkey));
 		log.println("Node balance: "+blockchain.getCoinBalance(pubkey)+" KiB ");
@@ -50,7 +57,7 @@ public class NodeServer extends Server {
 			log.println("Could not bind port");
 		}
 	}
-	public byte[] easyServe(byte[] in) {
+	public byte[] easyServe(byte[] in, String ip) {
 		byte cmd=in[0];
 		byte[] response="OK".getBytes(StandardCharsets.UTF_8);
 		byte data[]=Arrays.copyOfRange(in,1,in.length);
@@ -78,6 +85,17 @@ public class NodeServer extends Server {
 				response="INVALID".getBytes(StandardCharsets.UTF_8);
 				log.println("Invalid Transaction: "+t.toString());
 			}
+		}else if(cmd==CMD_ADD_NODE) {
+			log.println("Node reporting: IP address "+ip);
+			int l=nodes.length();
+			boolean go=!ip.equals("68.4.23.94");
+			for(int i=0;i<l;i++){
+				if(nodes.get(i).equals(ip))
+					go=false;
+			}
+			if(go)nodes.add(ip);
+		}else if(cmd==CMD_GET_NODES) {
+			response=nodes.serialize();
 		}else if(cmd==CMD_GET_BLOCK&&data.length==8){
 			int index=(int)SlitherS.bytesToLong(data);
 			log.println("Sending block "+index+" to client...");
