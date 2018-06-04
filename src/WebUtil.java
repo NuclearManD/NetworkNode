@@ -1,29 +1,48 @@
-
-
 import javax.swing.JFrame;
 import javax.swing.JList;
-import java.awt.BorderLayout;
-import javax.swing.JPanel;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JTextField;
+
+import nuclear.blocks.client.ClientIface;
+import nuclear.slithercrypto.ECDSAKey;
+import nuclear.slithercrypto.blockchain.BlockchainBase;
+import nuclear.slithercrypto.blockchain.SavedChain;
+import nuclear.slithercrypto.blockchain.Transaction;
+
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
 
-public class WebUtil extends JFrame {
 
+public class WebUtil extends JFrame implements ActionListener{
+	private String basepath=System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks";
+	private String keypath=basepath+"/keys/main.key";
+	private String bcfile=basepath+"/blockchain/";
+	
 	private static final long serialVersionUID = -3594380707506917724L;
 	private JTextField domainName;
-
+	
+	private BlockchainBase man;
+	private ClientIface iface;
+	private ECDSAKey key;
+	JList<String> fileList = new JList<String>();
+	JComboBox<String> domainSelect = new JComboBox<String>();
+	
 	public WebUtil(){
+		iface=new ClientIface("68.4.23.94");
+		man=new SavedChain(bcfile);
+		key=new ECDSAKey(keypath);
 		setBounds(100,100,480,256);
 		setTitle("Website Builder");
 		getContentPane().setLayout(null);
 		
-		JList<String> fileList = new JList<String>();
 		fileList.setBounds(150, 50, 200, 100);
 		getContentPane().add(fileList);
 		
-		JComboBox<String> domainSelect = new JComboBox<String>();
 		domainSelect.setBounds(150, 11, 130, 20);
 		getContentPane().add(domainSelect);
 		
@@ -33,6 +52,8 @@ public class WebUtil extends JFrame {
 		domainName.setColumns(10);
 		
 		JButton btnClaimDomain = new JButton("Claim Domain");
+		btnClaimDomain.setActionCommand("claim");
+		btnClaimDomain.addActionListener(this);
 		btnClaimDomain.setBounds(7, 110, 133, 23);
 		getContentPane().add(btnClaimDomain);
 		
@@ -45,7 +66,9 @@ public class WebUtil extends JFrame {
 		getContentPane().add(lblNetworkStatus);
 		
 		JButton btnUpload = new JButton("Upload");
+		btnUpload.setActionCommand("upload");
 		btnUpload.setBounds(365, 10, 89, 23);
+		btnUpload.addActionListener(this);
 		getContentPane().add(btnUpload);
 		
 		updateLists();
@@ -54,5 +77,42 @@ public class WebUtil extends JFrame {
 	}
 	private void updateLists() {
 		
+	}
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String cmd=e.getActionCommand();
+		if(cmd.equals("upload")){
+			upload();
+		}else if(cmd.equals("claim")){
+			iface.uploadTransaction(Transaction.register(key.getPublicKey(), key.getPrivateKey()));
+		}else if(cmd.equals("release")){
+			
+		}
+	}
+	private void upload() {
+		JFileChooser jfc = new JFileChooser(System.getProperty("user.home"));
+		int retval=jfc.showOpenDialog(this);
+		if(retval==JFileChooser.APPROVE_OPTION) {
+			File file=jfc.getSelectedFile();
+			String path=file.getPath();
+			long length=file.length();
+			try {
+				FileInputStream stream=new FileInputStream(path);
+				byte[] buffer=new byte[(int) length];
+				for(int i=0;i<length;i++) {
+					buffer[i]=(byte) stream.read();
+				}
+				stream.close();
+				new Thread(new Runnable() {
+
+					public void run() {
+						iface.downloadBlockchain(man);
+				    	 iface.uploadPair(Transaction.makeFile(key.getPublicKey(), key.getPrivateKey(), buffer, man.getBlockByIndex(man.length()-1).getHash(), file.getName()));
+				     }
+				}).start();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
 	}
 }

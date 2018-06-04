@@ -1,6 +1,8 @@
+import nuclear.slithercrypto.blockchain.SavedChain;
 import nuclear.slitherge.top.io;
 
 public class Main {
+	private static Node node;
 	public static void main(String[] args) {
 		boolean startNode=false;
 		boolean startWallet=false;
@@ -16,7 +18,7 @@ public class Main {
 		if(startNode){
 			new Thread(new Runnable() {
 				public void run() {
-					new Node();
+					node=new Node();
 				}
 			}).start();
 		}

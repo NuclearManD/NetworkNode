@@ -15,18 +15,18 @@ import nuclear.slithercrypto.blockchain.BlockchainBase;
 import nuclear.slithercrypto.blockchain.SavedChain;
 
 public class WalletMain implements Runnable {
-	String basepath=System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks";
-	String keypath=basepath+"/keys/main.key";
-	String blockchainStorePlace=basepath+"/blockchain/";
+	private String basepath=System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks";
+	private String keypath=basepath+"/keys/main.key";
+	private String blockchainStorePlace=basepath+"/blockchain/";
 	
-	ECDSAKey key;
+	private ECDSAKey key;
 	
-	String nodeAdr;
+	private String nodeAdr;
 	
-	ClientIface iface;
-	SavedChain chain;
-	WalletControl gui;
-	Logger log=new Logger("Wallet");
+	private ClientIface iface;
+	private SavedChain chain;
+	private WalletControl gui;
+	private Logger log=new Logger("Wallet");
 	public WalletMain() {
 		nodeAdr="68.4.23.94";//nuclear.blocks.wallet.Main.nodeAdr;//JOptionPane.showInputDialog(null, "What IP is the node at?");
 		if(new File(keypath).exists())
@@ -38,11 +38,7 @@ public class WalletMain implements Runnable {
 		}
 		log.println("Got key...");
 		chain=new SavedChain(blockchainStorePlace);
-		try {
-			iface=new ClientIface(nodeAdr);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		iface=new ClientIface(nodeAdr);
 		log.println("Loading GUI");
 		gui=new WalletControl(chain,key,iface);
 		gui.addressLabel.setText("Address: "+encode(key.getPublicKey()));
@@ -75,16 +71,12 @@ public class WalletMain implements Runnable {
 				gui.networkLabel.setText("Error connecting to network.  "+chain.length()+" main blocks loaded.");
 			gui.updateBalance();
 			try {
-				for(int i=0;i<1000;i++){
-					Thread.sleep(15);
+				for(int i=0;i<100;i++){
+					Thread.sleep(150);
 					if(gui.selReconnect){
 						nodeAdr=JOptionPane.showInputDialog(null, "What IP is the node at?");
-						try {
-							iface.close();
-							iface=new ClientIface(nodeAdr);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+						iface.close();
+						iface=new ClientIface(nodeAdr);
 						gui.selReconnect=false;
 						break;
 					}
@@ -106,6 +98,8 @@ public class WalletMain implements Runnable {
 			log.println("Downloading blocks from #"+i);
 			ArrayList<Block> blocks=iface.getBlocks(i);
 			if(blocks==null)
+				return -1;
+			if(blocks.isEmpty())
 				break;
 			if(iface.isNetErr()){
 				log.println("Network error!");
