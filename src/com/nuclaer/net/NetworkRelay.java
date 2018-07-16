@@ -11,6 +11,7 @@ import java.util.Arrays;
 import com.nuclaer.nnutil.Logger;
 
 import nuclear.slithernet.Client;
+import nuclear.slithernet.RoutingTable;
 import nuclear.slithernet.Server;
 
 public class NetworkRelay extends Server implements Runnable {

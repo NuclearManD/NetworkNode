@@ -9,6 +9,8 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import nuclear.slithernet.USReq;
+
 /*
  * a simple static http server
 */
