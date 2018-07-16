@@ -23,8 +23,6 @@ public class NetworkRelay extends Server implements Runnable {
 	Logger log=new Logger("Relay");
 	public NetworkRelay(int port) {
 		super(port);
-		log.println("Starting network relay...");
-		
 	}
 	public byte[] easyServe(byte[] in) {
 		byte endpoint[]=Arrays.copyOfRange(in,0,ADDRESS_LENGTH);
@@ -50,6 +48,10 @@ public class NetworkRelay extends Server implements Runnable {
 			try {
 				log.println("Relaying to "+target);
 				in=client.poll(in);
+				if(in==null){
+					log.println("Could not connect!");
+					return new byte[0];
+				}
 				log.println("Got response from "+target);
 				return in;
 			} catch (IOException e) {
@@ -104,6 +106,7 @@ public class NetworkRelay extends Server implements Runnable {
 		return ERROR_IN_TX;
 	}
 	public void start() throws IOException{
+		log.println("Starting network relay...");
 		sok = new ServerSocket(port);
 		NetworkRelay q=this;
 		new Thread(new Runnable() {
