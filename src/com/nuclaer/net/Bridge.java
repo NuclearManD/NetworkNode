@@ -9,6 +9,8 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import nuclear.slithernet.USReq;
+
 /*
  * a simple static http server
 */
@@ -27,7 +29,7 @@ public class Bridge implements HttpHandler{
 			server.createContext("/", this);
 			server.setExecutor(null); // creates a default executor
 			server.start();
-			log.println("Bridge started.");
+			log.println("Bridge started on port "+port);
 		}else
 			log.println("Error starting bridge!");
 	}

@@ -24,6 +24,7 @@ public class UniversalServer extends Server {
 	private static final String ERR_MSG_NO_DATA = "Error -1: request returned no data.";
 	private static final String ERR_MSG_BC_DNF  = "Error -3: Domain name not found on the blockchain.";
 	private static final String ERR_MSG_BC_404  = "Error -4: File was not found on that domain.";
+	private static final String ERR_MSG_BC_NBC  = "Error -5: This node has no blockchain to load the requested resource from.";
 	Logger log=new Logger("U.S.");
 	BlockchainBase man;
 	public UniversalServer(int port,BlockchainBase base) {
@@ -62,39 +63,44 @@ public class UniversalServer extends Server {
 			log.println("Request path:     "+path);
 			
 			if(protocol.equals("bc")){
-				if(uri.getPath()==null||uri.getPath().isEmpty())
-					path="index.html";
-				else
-					path=uri.getPath();
-				// now we need to search every transaction in the blockchain...
-				byte[] address=null;
-				int len=man.length();
-				for(int i=0;i<len;i++){
-					Block b=man.getBlockByIndex(i);
-					int transactions=b.numTransactions();
-					for(int j=0;j<transactions;j++){
-						Transaction t=b.getTransaction(j);
-						if(t.type==Transaction.TRANSACTION_REG_DNS
-								&&Arrays.equals(t.getMeta()
-										,access.getBytes())){
-							address=t.getSender();
-							i=len;
-							break;
+				if(man==null){
+					log.println("Error: No blockchain to get resource from!");
+					result=ERR_MSG_BC_NBC.getBytes();
+				}else{
+					if(uri.getPath()==null||uri.getPath().isEmpty())
+						path="index.html";
+					else
+						path=uri.getPath();
+					// now we need to search every transaction in the blockchain...
+					byte[] address=null;
+					int len=man.length();
+					for(int i=0;i<len;i++){
+						Block b=man.getBlockByIndex(i);
+						int transactions=b.numTransactions();
+						for(int j=0;j<transactions;j++){
+							Transaction t=b.getTransaction(j);
+							if(t.type==Transaction.TRANSACTION_REG_DNS
+									&&Arrays.equals(t.getMeta()
+											,access.getBytes())){
+								address=t.getSender();
+								i=len;
+								break;
+							}
 						}
 					}
-				}
-				if(address==null)
-					result=ERR_MSG_BC_DNF.getBytes();
-				else{
-					path=path.replaceFirst("/", "");
-					result=man.readPage(path, address);
-					if(result==null){
-						result=man.readPage("404.html", address);
-						if(result==null)
-							result=ERR_MSG_BC_404.getBytes();
-						log.println("File "+path+" was not found.");
+					if(address==null)
+						result=ERR_MSG_BC_DNF.getBytes();
+					else{
+						path=path.replaceFirst("/", "");
+						result=man.readPage(path, address);
+						if(result==null){
+							result=man.readPage("404.html", address);
+							if(result==null)
+								result=ERR_MSG_BC_404.getBytes();
+							log.println("File "+path+" was not found.");
+						}
+						
 					}
-					
 				}
 			}else if(protocol.equals("http")){
 				String urlString = uri.toString();

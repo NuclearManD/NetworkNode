@@ -14,7 +14,7 @@ import nuclear.slithercrypto.ECDSAKey;
 import nuclear.slitherge.top.io;
 
 public class Node{
-	NodeServer server;
+	//NodeServer server;
 	List<ExternalNode> nodes;
 	ECDSAKey key;
 	String keypath=System.getProperty("user.home")+"/AppData/Roaming/NuclearBlocks/keys/main.key";
@@ -26,14 +26,14 @@ public class Node{
 			key=new ECDSAKey();
 			key.save(keypath);
 		}
-		server=new NodeServer(key);
+		//server=new NodeServer(key);
 		NetworkRelay relay=new NetworkRelay(1153);
 		try {
 			relay.start();
 		}catch(IOException e){
 			io.println("Unable to start Network Relay.");
 		}
-		UniversalServer server=new UniversalServer(8081,this.server.blockchain);
+		UniversalServer server=new UniversalServer(8081,null);
 		try {
 			server.start();
 		}catch(IOException e){

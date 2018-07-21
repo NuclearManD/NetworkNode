@@ -1,8 +1,7 @@
 package com.nuclaer.test180409;
 
-import com.nuclaer.net.RoutingTable;
-
 import nuclear.slitherge.top.io;
+import nuclear.slithernet.RoutingTable;
 
 public class RoutingTableTest {
 	static byte[] a={0x7F,0x4E,0,0,(byte) 0xC0,(byte) 168,1,1};
