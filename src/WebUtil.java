@@ -79,8 +79,7 @@ public class WebUtil extends JFrame implements ActionListener{
 	}
 	private void updateLists() {
 		files.clear();
-		for(Transaction i:man.getPagesOf(key.getPublicKey())){
-			String n=new String(i.getMeta());
+		for(String n:man.getPagesOf(key.getPublicKey())){
 			boolean q=false;
 			for(int j=0;j<files.size();j++){
 				if(files.get(j).equals(n))
