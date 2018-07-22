@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import com.nuclaer.nnutil.Logger;
@@ -65,13 +66,14 @@ public class WalletControl extends WalletGUI {
 			    	RemoteFileSelector selector=new RemoteFileSelector(man,key.getPublicKey());
 					if(selector.selection==null)
 						return;
-					log.println(selector.selection);
+					byte[] sel=selector.selection.getDaughterHash();
+					log.println(selector.selection.toString());
 					int us = fc.showSaveDialog(null);
 					if(us==JFileChooser.APPROVE_OPTION) {
 						File file=fc.getSelectedFile();
 						log.println("Saving File...");
 						try(FileOutputStream f=new FileOutputStream(file)){
-							Block bk=iface.downloadDaughter(selector.selHash);
+							Block bk=iface.downloadDaughter(sel);
 							byte[] data=bk.getData();
 							f.write(data);
 							f.close();

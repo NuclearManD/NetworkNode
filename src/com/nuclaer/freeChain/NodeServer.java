@@ -4,13 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 
 import com.nuclaer.nnutil.Logger;
 
-import nuclear.blocks.client.NodeIface;
 import nuclear.blocks.node.SavedList;
 import nuclear.slithercrypto.ECDSAKey;
 import nuclear.slithercrypto.blockchain.Block;
@@ -29,9 +27,8 @@ public class NodeServer extends Server {
 	public static final byte[] RESULT_SUCCESS = "OK".getBytes(StandardCharsets.UTF_8);
 	public static final byte CMD_GET_DAUGHTER = 3;
 	public static final byte CMD_GET_BLOCKS = 4;
-	public static final byte CMD_ADD_NODE = 7;
+	public static final byte CMD_ADD_NODE = 5;
 	public static final byte CMD_GET_NODES= 6;
-	public static final byte CMD_GET_BCLEN = 8;
 	private static final int RESPONSE_SIZE_LIMIT = 1024*1024;
 	public BlockchainBase blockchain;
 	byte[] pubkey;
@@ -39,7 +36,6 @@ public class NodeServer extends Server {
 	Logger log=new Logger("Public Node");
 	
 	SavedList nodes;
-	NodeIface iface;
 	
 	public NodeServer(ECDSAKey key) {
 		super(1152);
@@ -51,23 +47,6 @@ public class NodeServer extends Server {
 		log.println("Loaded; blockchain contains "+blockchain.length()+" normal blocks.");
 		log.println("Node public key: "+Base64.getEncoder().encodeToString(pubkey));
 		log.println("Node balance: "+blockchain.getCoinBalance(pubkey)+" KiB ");
-		log.println("Starting node comm thread...");
-		int l=nodes.length();
-		int n=5;
-		if(l<n)
-			n=l;
-		
-		ArrayList<String> options=new ArrayList<String>();
-		for(int i=0;i<nodes.length();i++)
-			options.add(nodes.get(i));
-		String[] conns=new String[n];
-		
-		for(int i=0;i<n;i++){
-			conns[i]=options.remove((int)(Math.random()*options.size()));
-		}
-		iface=new NodeIface(conns,blockchain,new Logger("BCUPD"));
-		new Thread(iface).start();
-		iface.sync(blockchain);
 		if(blockchain.getPriority(pubkey)==100){
 			log.println("Node needs to register!  Registering now...");
 			blockchain.addTransaction(Transaction.register(pubkey, key.getPrivateKey()));
@@ -77,7 +56,6 @@ public class NodeServer extends Server {
 		} catch (IOException e) {
 			log.println("Could not bind port");
 		}
-		log.println("All started and ready to go!");
 	}
 	public byte[] easyServe(byte[] in, String ip) {
 		byte cmd=in[0];
@@ -107,8 +85,6 @@ public class NodeServer extends Server {
 				response="INVALID".getBytes(StandardCharsets.UTF_8);
 				log.println("Invalid Transaction: "+t.toString());
 			}
-		}else if(cmd==CMD_GET_BCLEN) {
-			response=SlitherS.longToBytes(blockchain.length());
 		}else if(cmd==CMD_ADD_NODE) {
 			log.println("Node reporting: IP address "+ip);
 			int l=nodes.length();
@@ -175,16 +151,12 @@ public class NodeServer extends Server {
 			new Thread(new Runnable(){
 				@Override
 				public void run() {
-					while(iface==null);
-					iface.sync(blockchain);
 					if(blockchain.length()==0){
 						Block block=new Block(new byte[32],new byte[0]);
 						block.sign(key);
 						blockchain.addBlock(block);
 					}
 					while(true){
-						while(!iface.safe())
-							io.waitMillis(10);
 						int bt=(int) (System.currentTimeMillis()/1000-blockchain.getBlockByIndex(blockchain.length()-1).getTimestamp());
 						if(blockchain.getPriority(pubkey)<bt){
 							blockchain.getCurrent().setLastBlockHash(blockchain.getBlockByIndex(blockchain.length()-1).getHash());
@@ -194,7 +166,7 @@ public class NodeServer extends Server {
 							else
 								log.println("ERROR COMMITING BLOCK!");
 						}
-						io.waitMillis(1000);
+						io.waitMillis(15000);
 							
 					}
 				}
